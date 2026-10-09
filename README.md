@@ -1,0 +1,1 @@
+# gk26-qr-scanner
