@@ -1,1 +1,92 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GK26 QR Check-In</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f3ec;
+      text-align: center;
+      padding: 18px;
+      color: #1d2b4f;
+    }
+    #reader {
+      width: 100%;
+      max-width: 450px;
+      margin: 20px auto;
+    }
+    button {
+      padding: 14px 22px;
+      border: 0;
+      border-radius: 10px;
+      background: #1d2b4f;
+      color: white;
+      font-size: 16px;
+    }
+    #status {
+      margin: 20px auto;
+      padding: 16px;
+      background: #eee;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎟️ GK26 CHECK-IN</h2>
+  <p>Annual Concert & Graduation Day 2026</p>
+
+  <div id="reader"></div>
+  <div id="status">READY TO SCAN</div>
+  <button id="start">OPEN CAMERA</button>
+
+  <script>
+    let scanner = null;
+    let starting = false;
+
+    document.getElementById("start").addEventListener("click", async () => {
+      if (starting || scanner) return;
+      starting = true;
+
+      const status = document.getElementById("status");
+      const button = document.getElementById("start");
+      button.disabled = true;
+      status.textContent = "Opening camera...";
+
+      try {
+        if (!window.isSecureContext || !navigator.mediaDevices) {
+          throw new Error("Open this page using its HTTPS GitHub Pages URL.");
+        }
+
+        scanner = new Html5Qrcode("reader");
+        await scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 240, height: 240 } },
+          async (decodedText) => {
+            status.textContent = "QR DETECTED:\n" + decodedText;
+            await scanner.stop();
+            scanner.clear();
+            scanner = null;
+            button.disabled = false;
+            button.textContent = "OPEN CAMERA AGAIN";
+          },
+          () => {}
+        );
+
+        status.textContent = "CAMERA ACTIVE — POINT AT A QR CODE";
+      } catch (err) {
+        scanner = null;
+        status.textContent = "CAMERA ERROR:\n" + (err.message || String(err));
+        button.disabled = false;
+      } finally {
+        starting = false;
+      }
+    });
+  </script>
+</body>
+</html>
